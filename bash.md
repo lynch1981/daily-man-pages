@@ -130,3 +130,40 @@ After logging back in, verify the setup with:
 docker --version
 docker ps
 ```
+
+## cd relative to the script's location
+Scripts often live in a subdirectory (e.g. `scripts/`) but need to run from the project root. `$0` is the script's path, `dirname` strips the filename, and `/..` goes one level up. This works no matter which directory you run the script from.
+
+**Command:**
+```bash
+#!/usr/bin/env bash
+cd "$(dirname "$0")/.." || exit 1   # now at the project root
+```
+
+Keep both pairs of quotes: the inner ones protect `$0`, the outer ones protect the result, so paths with spaces still work.
+
+Save the absolute path for later use:
+```bash
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+ROOT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
+```
+
+If the script may be `source`d, use `${BASH_SOURCE[0]}` instead of `$0`. When a file is sourced, `$0` is the calling shell (e.g. `bash`), not the file:
+```bash
+cd "$(dirname "${BASH_SOURCE[0]}")/.." || return
+```
+
+## Sort by version number
+`sort -V` (`--version-sort`) compares the numbers inside each string as numbers, so `1.10` sorts after `1.9`. A plain `sort` compares character by character and puts `1.10` first.
+
+**Command:**
+```bash
+printf 'v1.10.0\nv1.2.0\nv1.9.3\nv2.0.0\n' | sort      # v1.10.0 v1.2.0 v1.9.3 v2.0.0  (wrong)
+printf 'v1.10.0\nv1.2.0\nv1.9.3\nv2.0.0\n' | sort -V   # v1.2.0 v1.9.3 v1.10.0 v2.0.0
+
+# Latest git tag
+git tag | sort -V | tail -1
+
+# Newest first
+ls linux-*.tar.gz | sort -rV
+```
