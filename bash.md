@@ -167,3 +167,28 @@ git tag | sort -V | tail -1
 # Newest first
 ls linux-*.tar.gz | sort -rV
 ```
+
+## Default values `${var:-default}`
+Use `default` when `var` is unset or empty. `var` itself is not changed.
+
+**Command:**
+```bash
+port="${PORT:-8080}"           # env var, or 8080
+dir="${1:-.}"                  # first argument, or current dir
+editor="${EDITOR:-vim}"
+```
+
+Related forms:
+| Form | Meaning |
+|---|---|
+| `${var:-x}` | use `x` if unset or empty |
+| `${var-x}` | use `x` only if unset (empty stays empty) |
+| `${var:=x}` | like `:-`, but also assigns `x` to `var` |
+| `${var:?msg}` | if unset or empty, print `msg` and exit |
+| `${var:+x}` | use `x` only if `var` is set and non-empty |
+
+```bash
+: "${OUT_DIR:=build}"                       # set default in place (`:` is a no-op command)
+: "${API_KEY:?API_KEY must be set}"         # fail fast on missing config
+curl ${VERBOSE:+-v} "$url"                  # add -v only when VERBOSE is set
+```
