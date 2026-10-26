@@ -108,3 +108,25 @@ On macOS (no GNU coreutils), use `shasum`, or `brew install coreutils` to get `m
 ```bash
 echo "$hash  $file" | shasum -a 256 -c -
 ```
+
+## Install Docker on Linux
+Use the official Docker install script, then add your user to the `docker` group so Docker commands can run without `sudo`.
+
+**Command:**
+```bash
+# 1. Download and run the official install script
+curl -fsSL https://get.docker.com -o get-docker.sh
+sudo sh get-docker.sh
+
+# 2. Add the current user to the docker group
+sudo usermod -aG docker "$USER"
+
+# Log out and back in, or run the following in the current session:
+newgrp docker
+```
+
+After logging back in, verify the setup with:
+```bash
+docker --version
+docker ps
+```
