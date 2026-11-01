@@ -192,3 +192,21 @@ Related forms:
 : "${API_KEY:?API_KEY must be set}"         # fail fast on missing config
 curl ${VERBOSE:+-v} "$url"                  # add -v only when VERBOSE is set
 ```
+
+## Makefile: fallback when pkg-config fails `$(or ...)`
+`$(or a,b,...)` expands its arguments in order and returns the first non-empty one (GNU make). Combined with `$(shell pkg-config ...)`, it uses pkg-config's output when the package is found, and a hard-coded list otherwise.
+
+**Command:**
+```makefile
+# pkg-config prints nothing (stdout) if libxdp.pc is missing -> fall back to the fixed list
+LIBS   := $(or $(shell pkg-config --libs libxdp 2>/dev/null), -lxdp -lbpf -lelf -lz)
+CFLAGS += $(shell pkg-config --cflags libxdp 2>/dev/null)
+
+prog: prog.c
+	$(CC) $(CFLAGS) -o $@ $< $(LIBS)
+```
+
+Notes:
+- `2>/dev/null` hides the "Package libxdp was not found" error; the empty result is what triggers the fallback.
+- Use `:=` so `pkg-config` runs once, not every time `$(LIBS)` is expanded.
+- Check the result: `make -p | grep '^LIBS'` or add `$(info LIBS=$(LIBS))`.
