@@ -210,3 +210,28 @@ Notes:
 - `2>/dev/null` hides the "Package libxdp was not found" error; the empty result is what triggers the fallback.
 - Use `:=` so `pkg-config` runs once, not every time `$(LIBS)` is expanded.
 - Check the result: `make -p | grep '^LIBS'` or add `$(info LIBS=$(LIBS))`.
+
+## Makefile: pattern substitution `$(patsubst ...)`
+`$(patsubst pattern,replacement,text)` replaces each whitespace-separated word in `text` that matches `pattern`. `%` matches any substring and is carried over into `replacement`. Words that don't match are left unchanged.
+
+**Command:**
+```makefile
+SRCS := main.c util.c net/sock.c
+OBJS := $(patsubst %.c,%.o,$(SRCS))               # main.o util.o net/sock.o
+OBJS := $(patsubst %.c,build/%.o,$(SRCS))         # build/main.o build/util.o build/net/sock.o
+
+# Shorthand: substitution reference (suffix only)
+OBJS := $(SRCS:.c=.o)
+OBJS := $(SRCS:%.c=build/%.o)                     # same as the patsubst above
+
+# All .c files in src/ -> objects in build/
+OBJS := $(patsubst src/%.c,build/%.o,$(wildcard src/*.c))
+
+# Strip -l from a library list: -lxdp -lbpf -> xdp bpf
+NAMES := $(patsubst -l%,%,$(LIBS))
+```
+
+Notes:
+- Only the first `%` in `pattern` is a wildcard; use `\%` for a literal `%`.
+- Don't put spaces after the commas: `$(patsubst %.c, %.o, ...)` adds a leading space to the result.
+- `$(subst from,to,text)` is the plain-string version, with no `%` matching.
